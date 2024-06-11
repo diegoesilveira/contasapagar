@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: db_conta
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: conta_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - minha_rede
+    command: ["sh", "-c", "until pg_isready -h localhost -p 5432; do echo waiting for database; sleep 2; done;"]
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app_contasapagar
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db_conta:5432/conta_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    networks:
+      - minha_rede
+
+networks:
+  minha_rede:
+
+volumes:
+  postgres_data:
+
+
